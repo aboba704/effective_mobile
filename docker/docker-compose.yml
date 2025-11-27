@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mariadb:latest
+    container_name: db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: ServiceDB
+    ports:
+      - "3306:3306"
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  filler:
+    build: ./filler
+    container_name: filler
+    volumes:
+      - ./filler/data.csv:/app/data.csv
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app
+
+  web:
+    build: ./web
+    container_name: web
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge

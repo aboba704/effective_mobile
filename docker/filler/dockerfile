@@ -1,0 +1,10 @@
+FROM alpine:latest
+
+RUN apk add --no-cache mariadb-client bash
+
+WORKDIR /app
+
+COPY fill.sh .
+RUN chmod +x fill.sh
+
+CMD ["bash", "fill.sh"]
